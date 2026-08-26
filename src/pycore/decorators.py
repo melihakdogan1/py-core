@@ -90,10 +90,9 @@ def validate_types(*expected_types: type) -> Callable[[F], F]:
 
     return decorator
 
+
 @contextmanager
-def temporary_attribute(
-    obj: Any, attr_name: str, temp_value: Any
-) -> Iterator[None]:
+def temporary_attribute(obj: Any, attr_name: str, temp_value: Any) -> Iterator[None]:
     """with bloğu boyunca bir nesnenin özniteliğini geçici olarak
     değiştiren context manager.
     """
@@ -107,6 +106,7 @@ def temporary_attribute(
             setattr(obj, attr_name, original_val)
         else:
             delattr(obj, attr_name)
+
 
 @contextmanager
 def timer_context() -> Generator[dict[str, float], None, None]:

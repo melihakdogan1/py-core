@@ -4,7 +4,7 @@ install:
 	uv sync
 
 test:
-	uv run pytest -v --cov=src/pycore
+	uv run pytest -v --cov=src
 
 lint:
 	uv run ruff check .

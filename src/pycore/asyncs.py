@@ -97,9 +97,7 @@ async def race_first_completed(
 ) -> T:
     """İlk tamamlanan coroutine'in sonucunu döner."""
     tasks = [asyncio.create_task(c) for c in coros]
-    done, pending = await asyncio.wait(
-        tasks, return_when=asyncio.FIRST_COMPLETED
-    )
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
     for p in pending:
         p.cancel()
     first_task = done.pop()
