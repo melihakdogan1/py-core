@@ -5,7 +5,10 @@ description = "Python and Software Engineering Core Exercises"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "httpx>=0.28.1",
+    "polars>=1.44.1",
     "pyyaml>=6.0.3",
+    "requests>=2.34.2",
     "typer>=0.27.1",
 ]
 
