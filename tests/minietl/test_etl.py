@@ -18,7 +18,6 @@ from minietl.transforms import (
 
 
 class DummySource:
-
     def __init__(self, data: list[dict[str, Any]]) -> None:
         self.data = data
 
@@ -75,9 +74,7 @@ def test_csv_and_sqlite_sinks(tmp_path: Path) -> None:
 
     csv_out = tmp_path / "out.csv"
     csv_sink = CsvSink(csv_out, fieldnames=["id", "name"])
-    pipeline_csv = Pipeline(
-        source=DummySource(data), transform=None, sinks=[csv_sink]
-    )
+    pipeline_csv = Pipeline(source=DummySource(data), transform=None, sinks=[csv_sink])
     pipeline_csv.run()
     assert csv_out.exists()
     content = csv_out.read_text()

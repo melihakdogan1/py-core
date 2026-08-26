@@ -1,5 +1,7 @@
 import csv
+import json
 import sqlite3
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +23,10 @@ class CsvSink:
     """Kayıtları CSV dosyasına yazan hedef havuzu."""
 
     def __init__(
-        self, filepath: str | Path, fieldnames: list[str], encoding: str = "utf-8"
+        self,
+        filepath: str | Path,
+        fieldnames: list[str],
+        encoding: str = "utf-8",
     ) -> None:
         self.filepath = Path(filepath)
         self.fieldnames = fieldnames
@@ -31,7 +36,6 @@ class CsvSink:
         self.writer.writeheader()
 
     def write(self, record: dict[str, Any]) -> None:
-        # Sadece tanımlı fieldnames alanlarını yaz
         filtered = {k: record.get(k, "") for k in self.fieldnames}
         self.writer.writerow(filtered)
 
@@ -48,7 +52,7 @@ class SqliteSink:
     ) -> None:
         self.db_path = Path(db_path)
         self.table_name = table_name
-        self.columns = columns  # örn: {"id": "INTEGER", "name": "TEXT"}
+        self.columns = columns
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_table()
@@ -73,3 +77,17 @@ class SqliteSink:
 
     def close(self) -> None:
         self.conn.close()
+
+
+class StdoutSink:
+    """Kayıtları JSON formatında standart çıktıya (stdout) basan hedef."""
+
+    def __init__(self) -> None:
+        pass
+
+    def write(self, record: dict[str, Any]) -> None:
+        sys.stdout.write(json.dumps(record, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+
+    def close(self) -> None:
+        pass

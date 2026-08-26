@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Python and Software Engineering Core Exercises"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0.3",
+    "typer>=0.27.1",
+]
 
 [dependency-groups]
 dev = [
@@ -14,6 +17,7 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=5.0.0",
     "ruff>=0.5.0",
+    "types-pyyaml>=6.0.12.20260815",
 ]
 
 [tool.ruff]
@@ -42,3 +46,6 @@ packages = ["src/pycore", "src/minietl"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
+
+[project.scripts]
+mini-etl = "minietl.cli:app"
