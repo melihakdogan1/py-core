@@ -1,10 +1,15 @@
+"""1 GB sentetik web log analizi için farklı yaklaşımların (naive, generator,
+
+multiprocessing, polars) süre ve tepe bellek tüketim benchmarkları.
+"""
+
+import os
+import time
+import tracemalloc
 from collections import Counter
 from collections.abc import Iterator
 from multiprocessing import Pool, cpu_count
-import os
 from pathlib import Path
-import time
-import tracemalloc
 from typing import Any
 
 import polars as pl
@@ -12,10 +17,8 @@ import polars as pl
 LOG_PATH = Path("data/access.log")
 
 
-# ==========================================
-# (a) Naif Satır Döngüsü (Naive Loop)
-# ==========================================
 def run_naive(filepath: Path) -> dict[str, int]:
+    """Standart satır döngüsü ve temel sözlük ile endpoint agregasyonu."""
     endpoint_counts: dict[str, int] = {}
     with open(filepath, encoding="utf-8") as f:
         for line in f:
@@ -30,10 +33,8 @@ def run_naive(filepath: Path) -> dict[str, int]:
     return endpoint_counts
 
 
-# ==========================================
-# (b) Generator + Counter
-# ==========================================
 def log_endpoint_stream(filepath: Path) -> Iterator[str]:
+    """Log dosyasından endpoint alanını string slicing ile çıkaran generator."""
     with open(filepath, encoding="utf-8") as f:
         for line in f:
             try:
@@ -45,20 +46,19 @@ def log_endpoint_stream(filepath: Path) -> Iterator[str]:
 
 
 def run_generator_counter(filepath: Path) -> Counter[str]:
+    """Generator akışını collections.Counter ile tüketerek agregasyon yapar."""
     return Counter(log_endpoint_stream(filepath))
 
 
-# ==========================================
-# (c) Multiprocessing (Chunking ile Paralel)
-# ==========================================
 def process_chunk(args: tuple[Path, int, int]) -> Counter[str]:
+    """Belirli byte aralığını okuyup yerel sayaç üreten işçi (worker) fonksiyonu."""
     filepath, start_byte, end_byte = args
     counts: Counter[str] = Counter()
 
     with open(filepath, "rb") as f:
         f.seek(start_byte)
         if start_byte != 0:
-            f.readline()  # İlk yarım satırı atla
+            f.readline()
 
         while f.tell() < end_byte:
             line_bytes = f.readline()
@@ -76,6 +76,7 @@ def process_chunk(args: tuple[Path, int, int]) -> Counter[str]:
 
 
 def run_multiprocessing(filepath: Path) -> Counter[str]:
+    """Dosyayı CPU çekirdek sayısına göre byte ofsetlerine bölüp paralel işler."""
     file_size = os.path.getsize(filepath)
     num_workers = cpu_count()
     chunk_size = file_size // num_workers
@@ -95,11 +96,8 @@ def run_multiprocessing(filepath: Path) -> Counter[str]:
     return total_counts
 
 
-# ==========================================
-# (d) Polars (Lazy & Rust Engine)
-# ==========================================
 def run_polars(filepath: Path) -> dict[str, int]:
-    # Regex ile request alanından endpoint çıkarma ve agregasyon
+    """Rust tabanlı streaming query motoru ile vektörize log analizi."""
     df = (
         pl.scan_csv(
             filepath,
@@ -111,17 +109,15 @@ def run_polars(filepath: Path) -> dict[str, int]:
         .select(pl.col("column_7").alias("endpoint"))
         .group_by("endpoint")
         .len()
-        .collect(streaming=True)
+        .collect(engine="streaming")
     )
     return dict(zip(df["endpoint"].to_list(), df["len"].to_list()))
 
 
-# ==========================================
-# Runner & Metrik Ölçüm
-# ==========================================
 def measure_method(
     name: str, func: Any, *args: Any
 ) -> tuple[str, float, float, int]:
+    """Fonksiyonun çalışma süresini ve peak heap bellek tüketimini ölçer."""
     tracemalloc.start()
     start_time = time.perf_counter()
 
@@ -142,33 +138,29 @@ def measure_method(
 
 def main() -> None:
     if not LOG_PATH.exists():
-        print(f"Hata: {LOG_PATH} bulunamadı!")
+        print(f"Hata: {LOG_PATH} bulunamadı.")
         return
 
-    print("--- Ödev 2.3: Performans Benchmark Başlıyor (1 GB Log) ---\n")
-
     methods = [
-        ("(a) Naif Satır Döngüsü", run_naive),
-        ("(b) Generator + Counter", run_generator_counter),
-        ("(c) Multiprocessing", run_multiprocessing),
-        ("(d) Polars (Streaming)", run_polars),
+        ("Naif Satır Döngüsü", run_naive),
+        ("Generator + Counter", run_generator_counter),
+        ("Multiprocessing (Chunking)", run_multiprocessing),
+        ("Polars (Streaming Engine)", run_polars),
     ]
 
     results = []
     for name, fn in methods:
-        print(f"Çalıştırılıyor: {name}...")
         res = measure_method(name, fn, LOG_PATH)
         results.append(res)
-        print(f"  -> Süre: {res[1]:.2f} sn | Tepe Bellek: {res[2]:.2f} MB\n")
 
-    print("\n" + "=" * 65)
+    print("=" * 70)
     print(
-        f"{'Yöntem':<28} | {'Süre (sn)':<10} | {'Tepe RAM (MB)':<14} | {'Kayıt Sayısı'}"
+        f"{'Yöntem':<30} | {'Süre (sn)':<10} | {'Tepe RAM (MB)':<14} | {'Kayıt'}"
     )
-    print("-" * 65)
+    print("-" * 70)
     for name, dur, ram, count in results:
-        print(f"{name:<28} | {dur:<10.2f} | {ram:<14.2f} | {count}")
-    print("=" * 65)
+        print(f"{name:<30} | {dur:<10.2f} | {ram:<14.2f} | {count}")
+    print("=" * 70)
 
 
 if __name__ == "__main__":

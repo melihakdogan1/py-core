@@ -1,7 +1,7 @@
 import os
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 
 IP_POOL = [f"192.168.1.{i}" for i in range(1, 255)] + [
     f"10.0.0.{i}" for i in range(1, 100)
