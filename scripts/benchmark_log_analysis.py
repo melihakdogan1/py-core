@@ -27,9 +27,7 @@ def run_naive(filepath: Path) -> dict[str, int]:
                 req = parts[1].split()
                 if len(req) > 1:
                     endpoint = req[1]
-                    endpoint_counts[endpoint] = (
-                        endpoint_counts.get(endpoint, 0) + 1
-                    )
+                    endpoint_counts[endpoint] = endpoint_counts.get(endpoint, 0) + 1
     return endpoint_counts
 
 
@@ -114,9 +112,7 @@ def run_polars(filepath: Path) -> dict[str, int]:
     return dict(zip(df["endpoint"].to_list(), df["len"].to_list()))
 
 
-def measure_method(
-    name: str, func: Any, *args: Any
-) -> tuple[str, float, float, int]:
+def measure_method(name: str, func: Any, *args: Any) -> tuple[str, float, float, int]:
     """Fonksiyonun çalışma süresini ve peak heap bellek tüketimini ölçer."""
     tracemalloc.start()
     start_time = time.perf_counter()
@@ -129,9 +125,7 @@ def measure_method(
 
     peak_mem_mb = peak_mem_bytes / (1024 * 1024)
     total_records = (
-        sum(result.values())
-        if isinstance(result, (dict, Counter))
-        else len(result)
+        sum(result.values()) if isinstance(result, (dict, Counter)) else len(result)
     )
     return name, duration, peak_mem_mb, total_records
 
@@ -154,9 +148,7 @@ def main() -> None:
         results.append(res)
 
     print("=" * 70)
-    print(
-        f"{'Yöntem':<30} | {'Süre (sn)':<10} | {'Tepe RAM (MB)':<14} | {'Kayıt'}"
-    )
+    print(f"{'Yöntem':<30} | {'Süre (sn)':<10} | {'Tepe RAM (MB)':<14} | {'Kayıt'}")
     print("-" * 70)
     for name, dur, ram, count in results:
         print(f"{name:<30} | {dur:<10.2f} | {ram:<14.2f} | {count}")

@@ -1,9 +1,9 @@
 """1 GB sentetik web log dosyası üreten yardımcı script."""
 
 import os
-from pathlib import Path
 import random
 import time
+from pathlib import Path
 
 IP_POOL = [f"192.168.1.{i}" for i in range(1, 255)] + [
     f"10.0.0.{i}" for i in range(1, 100)
@@ -42,7 +42,7 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
             response_size = random.randint(100, 15000)
 
             line = (
-                f'{ip} - - [27/Aug/2026:12:00:00 +0000] '
+                f"{ip} - - [27/Aug/2026:12:00:00 +0000] "
                 f'"{method} {endpoint} HTTP/1.1" {status} {response_size}\n'
             )
             buffer.append(line)
@@ -65,9 +65,7 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
 
     elapsed = time.perf_counter() - start_time
     file_size_mb = os.path.getsize(target_path) / (1024 * 1024)
-    print(
-        f"\nTamamlandı! Boyut: {file_size_mb:.2f} MB | Süre: {elapsed:.2f} sn"
-    )
+    print(f"\nTamamlandı! Boyut: {file_size_mb:.2f} MB | Süre: {elapsed:.2f} sn")
 
 
 if __name__ == "__main__":

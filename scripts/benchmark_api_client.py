@@ -1,9 +1,9 @@
 """Senkron ve asenkron HTTP istemcilerini karşılaştıran benchmark modülü."""
 
 import asyncio
-from dataclasses import dataclass
 import random
 import time
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -64,9 +64,7 @@ async def fetch_with_retry(
                 resp = await client.get(url, timeout=5.0)
 
                 if resp.status_code == 429 or resp.status_code >= 500:
-                    backoff = (base_backoff * (2**attempt)) + random.uniform(
-                        0, 0.1
-                    )
+                    backoff = (base_backoff * (2**attempt)) + random.uniform(0, 0.1)
                     await asyncio.sleep(backoff)
                     continue
 
@@ -82,9 +80,7 @@ async def fetch_with_retry(
         return None
 
 
-async def fetch_async(
-    total: int, concurrency_limit: int = 10
-) -> BenchmarkResult:
+async def fetch_async(total: int, concurrency_limit: int = 10) -> BenchmarkResult:
     """Havuz sınırlandırmalı asenkron HTTP istemcisi ile veri çeker."""
     start_time = time.perf_counter()
     semaphore = asyncio.Semaphore(concurrency_limit)
@@ -122,9 +118,7 @@ def main() -> None:
     async_res = asyncio.run(fetch_async(TOTAL_REQUESTS, concurrency_limit=10))
 
     print("=" * 75)
-    print(
-        f"{'Yöntem':<35} | {'Süre (sn)':<10} | {'Başarılı':<10} | {'İstek/sn'}"
-    )
+    print(f"{'Yöntem':<35} | {'Süre (sn)':<10} | {'Başarılı':<10} | {'İstek/sn'}")
     print("-" * 75)
     for res in [sync_res, async_res]:
         row = (
