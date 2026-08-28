@@ -1,7 +1,9 @@
+"""1 GB sentetik web log dosyası üreten yardımcı script."""
+
 import os
+from pathlib import Path
 import random
 import time
-from pathlib import Path
 
 IP_POOL = [f"192.168.1.{i}" for i in range(1, 255)] + [
     f"10.0.0.{i}" for i in range(1, 100)
@@ -24,9 +26,7 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
     target_bytes = target_size_mb * 1024 * 1024
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(
-        f"Sentetik log dosyası üretiliyor ({target_size_mb} MB) -> {target_path}..."
-    )
+    print(f"Sentetik log üretiliyor ({target_size_mb} MB) -> {target_path}...")
     start_time = time.perf_counter()
 
     written_bytes = 0
@@ -41,7 +41,10 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
             status = random.choice(STATUS_CODES)
             response_size = random.randint(100, 15000)
 
-            line = f'{ip} - - [27/Aug/2026:12:00:00 +0000] "{method} {endpoint} HTTP/1.1" {status} {response_size}\n'
+            line = (
+                f'{ip} - - [27/Aug/2026:12:00:00 +0000] '
+                f'"{method} {endpoint} HTTP/1.1" {status} {response_size}\n'
+            )
             buffer.append(line)
 
             if len(buffer) >= buffer_size:
@@ -49,8 +52,9 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
                 f.write(content)
                 written_bytes += len(content.encode("utf-8"))
                 buffer.clear()
+                progress_mb = written_bytes / (1024 * 1024)
                 print(
-                    f"İlerleme: {written_bytes / (1024 * 1024):.1f} MB / {target_size_mb} MB",
+                    f"İlerleme: {progress_mb:.1f} MB / {target_size_mb} MB",
                     end="\r",
                 )
 
@@ -62,7 +66,7 @@ def generate_log_file(target_path: Path, target_size_mb: int = 1024) -> None:
     elapsed = time.perf_counter() - start_time
     file_size_mb = os.path.getsize(target_path) / (1024 * 1024)
     print(
-        f"\nTamamlandı! Boyut: {file_size_mb:.2f} MB | Geçen Süre: {elapsed:.2f} sn"
+        f"\nTamamlandı! Boyut: {file_size_mb:.2f} MB | Süre: {elapsed:.2f} sn"
     )
 
 

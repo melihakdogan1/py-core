@@ -1,12 +1,9 @@
-"""Senkron ve asenkron HTTP istemcilerinin throughput, rate-limit yönetimi ve
-
-retry mekanizmalarını karşılaştıran benchmark modülü.
-"""
+"""Senkron ve asenkron HTTP istemcilerini karşılaştıran benchmark modülü."""
 
 import asyncio
+from dataclasses import dataclass
 import random
 import time
-from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -26,7 +23,7 @@ class BenchmarkResult:
 
 
 def fetch_sync(total: int) -> BenchmarkResult:
-    """Tekil bağlantı oturumu üzerinden senkron bloklayıcı GET istekleri gönderir."""
+    """Tekil bağlantı oturumu üzerinden senkron GET istekleri gönderir."""
     start_time = time.perf_counter()
     success = 0
     failed = 0
@@ -60,7 +57,7 @@ async def fetch_with_retry(
     max_retries: int = 3,
     base_backoff: float = 0.5,
 ) -> dict[str, Any] | None:
-    """Semaphore kontrollü, üstel geri çekilmeli (exponential backoff) asenkron istek."""
+    """Semaphore kontrollü, retry destekli asenkron istek."""
     async with semaphore:
         for attempt in range(max_retries):
             try:
@@ -74,7 +71,7 @@ async def fetch_with_retry(
                     continue
 
                 resp.raise_for_status()
-                return resp.json()  # type: ignore[no-any-return]
+                return resp.json()
 
             except (httpx.RequestError, httpx.HTTPStatusError):
                 if attempt == max_retries - 1:
@@ -88,7 +85,7 @@ async def fetch_with_retry(
 async def fetch_async(
     total: int, concurrency_limit: int = 10
 ) -> BenchmarkResult:
-    """Havuz sınırlandırmalı asenkron HTTP istemcisi ile eşzamanlı veri çeker."""
+    """Havuz sınırlandırmalı asenkron HTTP istemcisi ile veri çeker."""
     start_time = time.perf_counter()
     semaphore = asyncio.Semaphore(concurrency_limit)
     limits = httpx.Limits(
@@ -130,9 +127,13 @@ def main() -> None:
     )
     print("-" * 75)
     for res in [sync_res, async_res]:
-        print(
-            f"{res.method:<35} | {res.total_time:<10.2f} | {res.successful_requests:<10} | {res.req_per_sec:.1f}"
+        row = (
+            f"{res.method:<35} | "
+            f"{res.total_time:<10.2f} | "
+            f"{res.successful_requests:<10} | "
+            f"{res.req_per_sec:.1f}"
         )
+        print(row)
     print("=" * 75)
 
 
