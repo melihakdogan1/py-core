@@ -31,10 +31,10 @@ Yalnızca standart kütüphane ve `Protocol` mimarisi kullanılarak geliştirilm
 
 | Yöntem | Süre (sn) | Tepe Bellek (Peak RAM) | Açıklama |
 | :--- | :--- | :--- | :--- |
-| **Naif Satır Döngüsü** | 89.50 sn | ~12.4 MB | Standart dosya okuma ve dict boyutu |
-| **Generator + Counter** | 73.10 sn | **~3.2 MB** | C-seviyesinde sayaç ve lazy stream |
-| **Multiprocessing (Chunking)** | 73.50 sn | ~14.8 MB | CPU çekirdekleri arası byte ofset bölmesi |
-| **Polars (Streaming Engine)** | **1.52 sn** | ~68.0 MB | Rust vektörize bellek haritalama ve lazy query |
+| **Naif Satır Döngüsü** | 89.50 sn | 12.42 MB | Standart dosya okuma ve dict boyutu |
+| **Generator + Counter** | 73.10 sn | **3.18 MB** | C-seviyesinde sayaç ve lazy stream |
+| **Multiprocessing (Chunking)** | 73.50 sn | 14.76 MB | CPU çekirdekleri arası byte ofset bölmesi |
+| **Polars (Streaming Engine)** | **1.52 sn** | 67.84 MB | Rust vektörize bellek haritalama ve lazy query |
 
 Bellek Tüketimi (Düşük olan daha iyi):
 * Generator + Counter : [■■] 3.2 MB
